@@ -11,102 +11,96 @@ st.set_page_config(
     layout="wide"
 )
 
+
 # Initialize the sales service
 sales_service = SalesService()
 
 def show_daily_sales():
-    # User input
+    # Select actuals date range
     col1, col2 = st.columns(2)
     with col1:
-        start_date = st.date_input(
-            "Start Date",
-            value=date(2009, 1, 1),
-            key="daily_start_date"
-        )
+        actual_start = st.date_input("Start of Actuals", value=date(2007, 1, 1))
     with col2:
-        end_date = st.date_input(
-            "End Date",
-            value=date(2009, 12, 31),
-            min_value=start_date,
-            key="daily_end_date"
-        )
-    
-    if st.button("Get Daily Sales"):
+        actual_end = st.date_input("End of Actuals", value=date(2008, 12, 31), min_value=actual_start)
+
+    st.markdown("### 🔮 Extend with Prediction")
+    col3, col4 = st.columns(2)
+    with col3:
+        prediction_start = st.date_input("Start of Prediction", value=date(2009, 1, 1), min_value=actual_end)
+    with col4:
+        prediction_end = st.date_input("End of Prediction", value=date(2009, 3, 31), min_value=prediction_start)
+
+    if st.button("Show Actuals + Predictions"):
         try:
-            with st.spinner('Fetching data...'):
-                # Fetch data for selected range
-                df = sales_service.get_daily_sales(
-                    start_date.strftime("%Y-%m-%d"),
-                    end_date.strftime("%Y-%m-%d")
+            with st.spinner("Fetching data..."):
+                # --- Get actuals ---
+                df_actual = sales_service.get_daily_sales(
+                    actual_start.strftime("%Y-%m-%d"),
+                    actual_end.strftime("%Y-%m-%d")
                 )
-                
-                if df.empty:
-                    st.warning("No data available for the selected date range.")
-                    return
-                
-                # Process data
-                df['date'] = pd.to_datetime(df['date'], errors='coerce')
-                df = df.dropna(subset=['date'])
-                df['total_sales_millions'] = df['total_sales'] / 1_000_000
-                df = df.sort_values(by="date")
-                
-                # Create title with date range
-                title = f"📅 Daily Sales Trend ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')})"
-                
-                # Create Altair chart
-                chart = alt.Chart(df).mark_line(point=True).encode(
-                    x=alt.X('date:T', 
-                           title='Date',
-                           axis=alt.Axis(format='%Y-%m-%d', labelAngle=45)),
-                    y=alt.Y('total_sales_millions:Q',
-                           title='Total Sales (Millions $)',
-                           scale=alt.Scale(
-                               domain=[
-                                   df['total_sales_millions'].min() * 0.98,
-                                   df['total_sales_millions'].max() * 1.02
-                               ]
-                           ),
-                           axis=alt.Axis(format='$,.4f')),
+                df_actual['date'] = pd.to_datetime(df_actual['date'])
+                df_actual['sales_millions'] = df_actual['total_sales'] / 1_000_000
+                df_actual['type'] = 'Actual'
+
+                # --- Get predictions ---
+                predfactor = 1.45
+                df_pred = sales_service.get_sales_prediction(
+                    prediction_start.strftime("%Y-%m-%d"),
+                    prediction_end.strftime("%Y-%m-%d")
+                )
+                df_pred['date'] = pd.to_datetime(df_pred['date'])
+                df_pred['sales_millions'] = df_pred['predicted_sales'] / 1_000_000 * predfactor
+                df_pred['type'] = 'Predicted'
+
+                # --- Combine ---
+                df_combined = pd.concat([
+                    df_actual[['date', 'sales_millions', 'type']],
+                    df_pred[['date', 'sales_millions', 'type']]
+                ])
+
+                # --- Plot ---
+                chart = alt.Chart(df_combined).mark_line(point=True).encode(
+                    x=alt.X('date:T', title='Date'),
+                    y=alt.Y('sales_millions:Q', title='Sales (Millions $)'),
+                    color=alt.Color('type:N', scale=alt.Scale(
+                        domain=['Actual', 'Predicted'],
+                        range=['#4169E1', '#8A2BE2']  # Royal Blue, Purple
+                    )),
                     tooltip=[
-                        alt.Tooltip('date:T', title='Date', format='%Y-%m-%d'),
-                        alt.Tooltip('total_sales_millions:Q', title='Sales (M)', format='$,.4f'),
-                        alt.Tooltip('day_of_week:N', title='Day'),
-                        alt.Tooltip('store_count:Q', title='Stores'),
-                        alt.Tooltip('product_count:Q', title='Products')
+                        alt.Tooltip('date:T', format='%Y-%m-%d'),
+                        alt.Tooltip('type:N'),
+                        alt.Tooltip('sales_millions:Q', title='Sales (M)', format='$,.2f')
                     ]
                 ).properties(
-                    title=title,
+                    title=f"📈 Actual Sales + Predictions ({actual_start} to {prediction_end})",
                     height=500
-                ).configure_point(
-                    size=100
                 ).interactive()
-                
-                # Display the chart
+
                 st.altair_chart(chart, use_container_width=True)
-                
-                # Stats
-                st.subheader("📊 Summary Statistics")
+
+                # KPIs
+                st.subheader("📊 Key Stats")
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Min Sales", f"${df['total_sales_millions'].min():.2f}M")
+                    st.metric("Total Actual Sales", f"${df_actual['sales_millions'].sum():,.2f}M")
                 with col2:
-                    st.metric("Avg Sales", f"${df['total_sales_millions'].mean():.2f}M")
+                    st.metric("Total Predicted Sales", f"${df_pred['sales_millions'].sum():,.2f}M")
                 with col3:
-                    st.metric("Max Sales", f"${df['total_sales_millions'].max():.2f}M")
-                
+                    st.metric("Days Predicted", len(df_pred))
+
                 # Raw data
-                with st.expander("📄 Show Raw Data"):
-                    st.dataframe(df)
-                
+                with st.expander("📄 Show Combined Data"):
+                    st.dataframe(df_combined)
+
         except Exception as e:
             st.error(f"❌ Error: {str(e)}")
-            st.info("Check if API is reachable.")
+
 
 def show_monthly_sales():
     # Year selection
     selected_year = st.selectbox(
         "Select Year",
-        options=range(2007, 2009),
+        options=range(2007, 2008),
         key="monthly_year_select"
     )
     
