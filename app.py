@@ -168,7 +168,9 @@ def show_daily_sales():
                 title = f"📅 Daily Sales Trend ({actual_start.strftime('%Y-%m-%d')} to {actual_end.strftime('%Y-%m-%d')})"
                 
                 # Create Altair chart
-                chart = alt.Chart(df).mark_line(point=True).encode(
+                chart = alt.Chart(df).mark_line(
+                    color='#4B6EF5',              # Navy blue (you can also use 'navy')
+                    strokeWidth=2).encode(
                     x=alt.X('date:T', 
                            title='Date',
                            axis=alt.Axis(format='%Y-%m-%d', labelAngle=45)),
@@ -252,12 +254,12 @@ def show_daily_sales():
                 ])
 
                 # --- Plot ---
-                chart = alt.Chart(df_combined).mark_line(point=True).encode(
+                chart = alt.Chart(df_combined).mark_line.encode(
                     x=alt.X('date:T', title='Date'),
                     y=alt.Y('sales_millions:Q', title='Sales (Millions $)'),
                     color=alt.Color('type:N', scale=alt.Scale(
                         domain=['Actual', 'Predicted'],
-                        range=['#4169E1', '#8A2BE2']  # Royal Blue, Purple
+                        range=['#4B6EF5', '#D8BFD8']  # Royal Blue, Purple
                     )),
                     tooltip=[
                         alt.Tooltip('date:T', format='%Y-%m-%d'),
@@ -317,7 +319,7 @@ def show_monthly_sales():
                 title = f"📅 Monthly Sales for {selected_year}"
                 
                 # Create Altair chart for monthly sales
-                sales_chart = alt.Chart(df).mark_line(point=True).encode(
+                sales_chart = alt.Chart(df).mark_line(point=True, color='#4B6EF5').encode(
                     x=alt.X('month:N', 
                            title='Month',
                            sort=None),  # Preserve month order
@@ -416,7 +418,7 @@ def show_monthly_sales():
             st.info("Check if API is reachable.")
 
 def show_sales_prediction():
-    st.subheader("🔮 Sales Prediction")
+    st.subheader("🔮Prediction View")
     
     # Date range selection
     col1, col2 = st.columns(2)
@@ -451,13 +453,12 @@ def show_sales_prediction():
                 df['predicted_sales_k'] = df['predicted_sales'] / 1000
                 
                 # Create title
-                title = f"🔮 Sales Predictions ({min_date.strftime('%Y-%m-%d')} to {max_date.strftime('%Y-%m-%d')})"
+                title = f"🔮 Prediction View ({min_date.strftime('%Y-%m-%d')} to {max_date.strftime('%Y-%m-%d')})"
                 
                 # Create Altair chart
                 chart = alt.Chart(df).mark_line(
-                    point=True,
                     strokeDash=[6, 3],  # Creates dotted line
-                    color='#8A2BE2'  # Purple color (BlueViolet)
+                    color='#D8BFD8'  # Purple color (BlueViolet)
                 ).encode(
                     x=alt.X('date:T', 
                            title='Date',
