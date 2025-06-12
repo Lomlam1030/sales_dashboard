@@ -144,6 +144,77 @@ def show_daily_sales():
         actual_start = st.date_input("Start of Actuals", value=date(2007, 1, 1))
     with col2:
         actual_end = st.date_input("End of Actuals", value=date(2008, 12, 31), min_value=actual_start)
+        
+    if st.button("Show Actuals"):
+        try:
+            with st.spinner('Fetching data...'):
+                # Fetch data for selected range
+                df = sales_service.get_daily_sales(
+                actual_start.strftime("%Y-%m-%d"),
+                actual_end.strftime("%Y-%m-%d")
+                )
+                
+                if df.empty:
+                    st.warning("No data available for the selected date range.")
+                    return
+                
+                # Process data
+                df['date'] = pd.to_datetime(df['date'], errors='coerce')
+                df = df.dropna(subset=['date'])
+                df['total_sales_millions'] = df['total_sales'] / 1_000_000
+                df = df.sort_values(by="date")
+                
+                # Create title with date range
+                title = f"📅 Daily Sales Trend ({actual_start.strftime('%Y-%m-%d')} to {actual_end.strftime('%Y-%m-%d')})"
+                
+                # Create Altair chart
+                chart = alt.Chart(df).mark_line(point=True).encode(
+                    x=alt.X('date:T', 
+                           title='Date',
+                           axis=alt.Axis(format='%Y-%m-%d', labelAngle=45)),
+                    y=alt.Y('total_sales_millions:Q',
+                           title='Total Sales (Millions $)',
+                           scale=alt.Scale(
+                               domain=[
+                                   df['total_sales_millions'].min() * 0.98,
+                                   df['total_sales_millions'].max() * 1.02
+                               ]
+                           ),
+                           axis=alt.Axis(format='$,.4f')),
+                    tooltip=[
+                        alt.Tooltip('date:T', title='Date', format='%Y-%m-%d'),
+                        alt.Tooltip('total_sales_millions:Q', title='Sales (M)', format='$,.4f'),
+                        alt.Tooltip('day_of_week:N', title='Day'),
+                        alt.Tooltip('store_count:Q', title='Stores'),
+                        alt.Tooltip('product_count:Q', title='Products')
+                    ]
+                ).properties(
+                    title=title,
+                    height=500
+                ).configure_point(
+                    size=100
+                ).interactive()
+                
+                # Display the chart
+                st.altair_chart(chart, use_container_width=True)
+                
+                # Stats
+                st.subheader("📊 Summary Statistics")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Min Sales", f"${df['total_sales_millions'].min():.2f}M")
+                with col2:
+                    st.metric("Avg Sales", f"${df['total_sales_millions'].mean():.2f}M")
+                with col3:
+                    st.metric("Max Sales", f"${df['total_sales_millions'].max():.2f}M")
+                
+                # Raw data
+                with st.expander("📄 Show Raw Data"):
+                    st.dataframe(df)
+                
+        except Exception as e:
+            st.error(f"❌ Error: {str(e)}")
+            st.info("Check if API is reachable.")
 
     st.markdown("### 🔮 Extend with Prediction")
     col3, col4 = st.columns(2)
