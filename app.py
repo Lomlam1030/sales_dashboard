@@ -5,12 +5,134 @@ from services import SalesService
 import altair as alt
 import calendar
 
+# Theme colors for charts and visualizations
+COLORS = {
+    'background': '#E6E6FA',     # Lilac
+    'primary': '#4169E1',        # Royal Blue
+    'accent': '#8A2BE2',         # BlueViolet
+    'text': '#1E1E3F',           # Dark Blue for text on light background
+    'card': '#483D8B',           # DarkSlateBlue for tabs
+    'tab_selected': '#6A5ACD'    # SlateBlue for selected tab
+}
+
 st.set_page_config(
     page_title="Sales Dashboard",
     page_icon="📊",
     layout="wide"
 )
 
+# Apply custom CSS
+st.markdown(f"""
+<style>
+    /* Main background */
+    .stApp {{
+        background-color: {COLORS['background']};
+    }}
+    
+    /* Text colors */
+    .stMarkdown, p, span {{
+        color: {COLORS['text']};
+    }}
+    
+    /* Headers */
+    h1, h2, h3, h4, h5, h6 {{
+        color: {COLORS['primary']};
+    }}
+    
+    /* Metric cards */
+    [data-testid="stMetricValue"] {{
+        color: {COLORS['primary']};
+    }}
+    
+    /* Expander */
+    .streamlit-expanderHeader {{
+        background-color: {COLORS['card']};
+        color: white;
+    }}
+    
+    /* Buttons */
+    .stButton>button {{
+        background-color: {COLORS['card']};
+        color: #E6E6FA !important;
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        border: none;
+        font-weight: normal;
+        height: 3rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-family: sans-serif;
+    }}
+    
+    /* Button text styling to match tabs */
+    .stButton>button p, .stButton>button span, .stButton>button div {{
+        color: #E6E6FA !important;
+        font-weight: 400 !important;
+        font-family: sans-serif !important;
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+    }}
+    
+    /* Button hover effect */
+    .stButton>button:hover {{
+        background-color: {COLORS['tab_selected']};
+        color: #E6E6FA !important;
+        border: none;
+    }}
+    
+    /* Button active effect */
+    .stButton>button:active {{
+        background-color: {COLORS['tab_selected']};
+        color: #E6E6FA !important;
+        border: none;
+        transform: translateY(1px);
+    }}
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {{
+        margin: 0 0 2rem 0;
+    }}
+    
+    .stTabs [data-baseweb="tab"] {{
+        height: 3rem;
+        white-space: pre-wrap;
+        background-color: {COLORS['card']};
+        border-radius: 4px;
+        padding: 1rem;
+        margin-right: 1rem;
+    }}
+
+    /* Override the tab text color */
+    .stTabs [data-baseweb="tab"] * {{
+        color: #E6E6FA !important;
+    }}
+    
+    button[role="tab"] {{
+        color: #E6E6FA !important;
+    }}
+    
+    button[role="tab"] div {{
+        color: #E6E6FA !important;
+    }}
+
+    /* Selected tab */
+    .stTabs [data-baseweb="tab"][aria-selected="true"] {{
+        background-color: {COLORS['tab_selected']};
+    }}
+
+    /* Tab hover effect */
+    .stTabs [data-baseweb="tab"]:hover {{
+        background-color: {COLORS['tab_selected']};
+        transition: all 0.3s ease;
+    }}
+
+    /* Override all button text colors */
+    button, button *, .stButton button, .stButton button * {{
+        color: #E6E6FA !important;
+        fill: #E6E6FA !important;
+    }}
+</style>
+""", unsafe_allow_html=True)
 
 # Initialize the sales service
 sales_service = SalesService()
@@ -318,7 +440,19 @@ def show_sales_prediction():
             st.info("Check if prediction API is reachable.")
 
 def main():
-    st.title("📊 Sales Dashboard")
+    # Enhanced title with gradient background
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(90deg, {COLORS['primary']} 0%, {COLORS['accent']} 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+    ">
+        <h1 style="color: white; margin: 0;">📊 Sales Ninja Dashboard</h1>
+        <p style="color: #f0f0f0; margin-top: 0.5rem;">Track performance, predict trends, and uncover insights</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Create tabs
     tab1, tab2, tab3 = st.tabs(["Daily Sales", "Monthly Sales", "Sales Prediction"])

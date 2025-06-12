@@ -1,0 +1,19 @@
+[theme]
+# Primary accent color for interactive elements
+primaryColor = "#4169E1"  # Royal Blue
+
+# Background color for the main content area
+backgroundColor = "#E6F0FA"  # Light background
+
+# Background color used for the sidebar and most interactive widgets
+secondaryBackgroundColor = "#1E1E3F"  # Card background
+
+# Color used for almost all text
+textColor = "#E6E6FA"  # Lavender
+
+# Font family for all text in the app, except code blocks
+font = "sans serif"
+
+[server]
+# Enable the theme by default
+enableStaticServing = true 
