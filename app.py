@@ -254,7 +254,7 @@ def show_daily_sales():
                 ])
 
                 # --- Plot ---
-                chart = alt.Chart(df_combined).mark_line(point=True).encode(
+                chart = alt.Chart(df_combined).mark_line().encode(
                     x=alt.X('date:T', title='Date'),
                     y=alt.Y('sales_millions:Q', title='Sales (Millions $)'),
                     color=alt.Color('type:N', scale=alt.Scale(
