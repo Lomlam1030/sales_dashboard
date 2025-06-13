@@ -153,7 +153,7 @@ st.markdown(f"""
         background-color: #1e1e3f !important;
         color: #E6E6FA !important;
     }}
-</style>
+
 </style>
 """, unsafe_allow_html=True)
 
