@@ -552,7 +552,7 @@ def main():
     """, unsafe_allow_html=True)
     
     # Create tabs
-    tab1, tab2, tab3 = st.tabs(["Daily Sales", "Monthly Sales", "Sales Prediction"])
+    tab1, tab2, tab3 = st.tabs(["Daily Actuals", "Monthly Actuals", "Monthly Predictions"])
     
     with tab1:
         show_daily_sales()
