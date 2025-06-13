@@ -238,7 +238,7 @@ def show_daily_sales():
                 df_actual['type'] = 'Actual'
 
                 # --- Get predictions ---
-                predfactor = 1.45
+                predfactor = 16.0
                 df_pred = sales_service.get_sales_prediction(
                     prediction_start.strftime("%Y-%m-%d"),
                     prediction_end.strftime("%Y-%m-%d")
@@ -254,7 +254,7 @@ def show_daily_sales():
                 ])
 
                 # --- Plot ---
-                chart = alt.Chart(df_combined).mark_line.encode(
+                chart = alt.Chart(df_combined).mark_line(point=True).encode(
                     x=alt.X('date:T', title='Date'),
                     y=alt.Y('sales_millions:Q', title='Sales (Millions $)'),
                     color=alt.Color('type:N', scale=alt.Scale(
@@ -295,7 +295,7 @@ def show_monthly_sales():
     # Year selection
     selected_year = st.selectbox(
         "Select Year",
-        options=range(2007, 2008),
+        options=range(2007, 2009),
         key="monthly_year_select"
     )
     
@@ -440,6 +440,7 @@ def show_sales_prediction():
         try:
             with st.spinner('Fetching predictions...'):
                 # Fetch prediction data
+                predfactor = 16.0
                 df = sales_service.get_sales_prediction(
                     min_date.strftime("%Y-%m-%d"),
                     max_date.strftime("%Y-%m-%d")
@@ -450,15 +451,16 @@ def show_sales_prediction():
                     return
                 
                 # Convert sales to thousands for better readability
-                df['predicted_sales_k'] = df['predicted_sales'] / 1000
+                df['predicted_sales_k'] = df['predicted_sales'] / 1000 * predfactor
                 
                 # Create title
                 title = f"🔮 Prediction View ({min_date.strftime('%Y-%m-%d')} to {max_date.strftime('%Y-%m-%d')})"
                 
                 # Create Altair chart
                 chart = alt.Chart(df).mark_line(
+                    point=True,
                     strokeDash=[6, 3],  # Creates dotted line
-                    color='#D8BFD8'  # Purple color (BlueViolet)
+                    color='#D8BFD8'     # Light purple (thistle)
                 ).encode(
                     x=alt.X('date:T', 
                            title='Date',
@@ -468,7 +470,7 @@ def show_sales_prediction():
                            scale=alt.Scale(
                                domain=[
                                    df['predicted_sales_k'].min() * 0.98,
-                                   df['predicted_sales_k'].max() * 1.02
+                                   df['predicted_sales_k'].max() * 1.02,
                                ]
                            ),
                            axis=alt.Axis(format='$,.2f')),
@@ -481,7 +483,7 @@ def show_sales_prediction():
                     height=500
                 ).configure_point(
                     size=100,
-                    color='#8A2BE2'  # Match points color with line
+                    color='#D8BFD8'  # Match points color with line
                 ).interactive()
                 
                 # Display the chart
@@ -492,7 +494,7 @@ def show_sales_prediction():
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric("Min Predicted Sales", 
-                             f"${df['predicted_sales'].min()/1000:.2f}K")
+                             f"${df['predicted_sales'].min()/1000:.2f}K") 
                 with col2:
                     st.metric("Avg Predicted Sales", 
                              f"${df['predicted_sales'].mean()/1000:.2f}K")
