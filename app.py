@@ -131,6 +131,29 @@ st.markdown(f"""
         color: #E6E6FA !important;
         fill: #E6E6FA !important;
     }}
+    /* Try to darken the calendar popup */
+    div[role="application"][aria-roledescription="datepicker"] {{
+        background-color: #1e1e3f !important;
+        color: #E6E6FA !important;
+        border-radius: 12px !important;
+    }}
+
+    /* Try to darken the calendar grid and cells */
+    div[role="grid"] {{
+        background-color: #1e1e3f !important;
+        color: #E6E6FA !important;
+    }}
+    div[role="gridcell"] {{
+        background-color: #1e1e3f !important;
+        color: #E6E6FA !important;
+    }}
+
+    /* Try to darken the weekday headers */
+    div[alt] {{
+        background-color: #1e1e3f !important;
+        color: #E6E6FA !important;
+    }}
+</style>
 </style>
 """, unsafe_allow_html=True)
 
